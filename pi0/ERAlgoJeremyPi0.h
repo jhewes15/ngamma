@@ -29,7 +29,7 @@ namespace ertool {
   public:
 
     /// Default constructor
-    ERAlgoJeremyPi0(const std::string& name="ERAlgoJeremyPi0");
+    ERAlgoJeremyPi0(const std::string& name="Pi0");
 
     /// Default destructor
     virtual ~ERAlgoJeremyPi0(){};
@@ -58,14 +58,13 @@ namespace ertool {
     /// Take identified pi0s and add them to ParticleGraph
     void AddPi0s(ParticleGraph& graph, CombinationScoreSet_t particles);
     
-    /// Debug function to loop over all pi0s and list their info
-    void CheckPi0s(ParticleGraph graph);
-    
     /// Generate some fake showers
     Shower Generate();
     
   protected:
     
+    std::string _name;
+
     bool _verbose      = false;
     bool _trainingMode = false;
     

@@ -7,7 +7,8 @@ namespace ertool {
 
   ERAlgoJeremyPi0::ERAlgoJeremyPi0(const std::string& name) : AlgoBase(name)
   {
-    _nGamma = new NGammaBase("pi0");
+    _name = name;
+    _nGamma = new NGammaBase();
   }
 
   void ERAlgoJeremyPi0::Reset()
@@ -15,8 +16,12 @@ namespace ertool {
 
   void ERAlgoJeremyPi0::AcceptPSet(const ::fcllite::PSet& cfg)
   {
+    // get external parameters if not training PDFs
     if (!_trainingMode)
-      _nGamma->AcceptPSet(cfg);
+    {
+      auto ngamma_pset = cfg.get_pset(_name);
+      _nGamma->AcceptPSet(ngamma_pset);
+    }
   }
 
   void ERAlgoJeremyPi0::ProcessBegin()
@@ -24,25 +29,42 @@ namespace ertool {
 
   bool ERAlgoJeremyPi0::Reconstruct(const EventData &data, ParticleGraph& graph)
   {
+    // first case: training pdfs!
     if (_trainingMode)
     {
       auto nodes = graph.GetParticleNodes(RecoType_t::kShower,0,22);
       if (nodes.size() == 2)
       {
+        // get the two gamma shower particles
         auto particle1 = graph.GetParticle(nodes[0]);
         auto particle2 = graph.GetParticle(nodes[1]);
+        
+        // calculate angle between showers
         double angle = particle1.Momentum().Angle(particle2.Momentum());
+        
+        // calculate invariant mass
         double invMass = sqrt(2 * particle1.Energy() * particle2.Energy() * (1 - cos(angle)));
-        _nGamma->FillMassPdf(invMass);
+        
+        // make sure energies are above a certain threshold
+        if (invMass < 300)
+        {
+          // add to PDF
+          _nGamma->FillMassPdf(invMass);
+        }
       }
     }
     
+    // second case: using pdfs to make selection!
     else
     {
+      // score all possible combinations of gammas
       CombinationScoreSet_t candidates = _nGamma->GammaComparison(graph, 2);
+      
+      // select the best candidates as pi0s
       CombinationScoreSet_t event = _nGamma->EventSelection(candidates, 0.7);
+      
+      // add the pi0s to the particle graph, then check it worked properly
       AddPi0s(graph, event);
-      CheckPi0s(graph);
     }
     
     return true;
@@ -50,8 +72,12 @@ namespace ertool {
 
   void ERAlgoJeremyPi0::ProcessEnd(TFile* fout)
   {
+    // if in training mode, save the trained parameters for future use
     if (_trainingMode)
-      _nGamma->SaveParams();
+    {
+      auto& params = OutputPSet();
+      params.add_pset(_nGamma->GetParams());
+    }
   }
   
   // ****************** //
@@ -89,30 +115,7 @@ namespace ertool {
       parent->SetParticleInfo(pdg_pi0, ParticleMass(pdg_pi0), X, P, particle.second);
     }
   }
-  
-  
-  // ******************** //
-  // **** CHECK PI0S **** //
-  // ******************** //
-  
-  void ERAlgoJeremyPi0::CheckPi0s(ParticleGraph graph)
-  {
-    
-    std::cout << "[" << __FUNCTION__ << "] PI0 EVENT SUMMARY" << std::endl;
-    std::cout << std::endl;
-    
-    auto pi0_ids = graph.GetParticleNodes(RecoType_t::kInvisible,0,111);
-    for (auto const& pi0_id : pi0_ids)
-    {
-      auto pi0 = graph.GetParticle(pi0_id);
-      std::cout << "[" << __FUNCTION__ << "] Node ID   " << pi0_id << std::endl;
-      std::cout << "[" << __FUNCTION__ << "] Mass      " << pi0.Mass() << "MeV" << std::endl;
-      std::cout << "[" << __FUNCTION__ << "] Energy    " << pi0.Energy() << "MeV" << std::endl;
-      std::cout << "[" << __FUNCTION__ << "] Vertex    (" << pi0.Vertex()[0] << "," << pi0.Vertex()[1] << "," << pi0.Vertex()[2] << ")" << std::endl;
-      std::cout << "[" << __FUNCTION__ << "] Momentum  (" << pi0.Momentum()[0] << "," << pi0.Momentum()[1] << "," << pi0.Momentum()[2] << ")" << std::endl;
-      std::cout << std::endl;
-    }
-  }
+
   
   // ******************************** //
   // **** GAMMA SHOWER GENERATOR **** //

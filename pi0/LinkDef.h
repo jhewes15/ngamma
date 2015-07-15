@@ -10,6 +10,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class ertool::ERAlgoJeremyPi0+;
+#pragma link C++ class ertool::ERAnaJeremyPi0+;
+#pragma link C++ class larlite::containedpi0+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 

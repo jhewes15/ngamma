@@ -5,7 +5,7 @@
  * 
  * \brief Class def header for a class NGammaBase
  *
- * @author jhewes15
+ * @author jeremy h
  */
 
 /** \addtogroup Algo
@@ -34,7 +34,7 @@ namespace ertool {
   public:
 
     /// Default constructor
-    NGammaBase(std::string name);
+    NGammaBase();
 
     /// Default destructor
     virtual ~NGammaBase(){};
@@ -50,7 +50,7 @@ namespace ertool {
     /// Loop over shower combinations and set score
     CombinationScoreSet_t GammaComparison(const ParticleGraph& graph, int n = 0);
     
-    /// Find best combination of pi0s in event
+    /// Find best combinations in event
     CombinationScoreSet_t EventSelection(CombinationScoreSet_t candidates, double threshold);
     
     /// Likelihood function to score a combination of gammas
@@ -60,8 +60,10 @@ namespace ertool {
     void FillEnergyPdf(double energy);
     void FillMomentumPdf(geoalgo::Vector momentum);
     void FillMassPdf(double mass);
-    void FillRadLenPdf(double conv);
-    void SaveParams();
+    fcllite::PSet GetParams();
+    
+    /// Function to set a RooFit parameter
+    void SetParam(RooRealVar* var, double val);
     
     /// Functions to set external variables
     void SetExternalEnergy(double energy){ _extEnergy = energy; };
@@ -89,15 +91,10 @@ namespace ertool {
     RooAbsPdf*  _massPdf;
     RooDataSet* _massData;
     
-    RooRealVar* _radLenVar;
-    RooAbsPdf*  _radLenPdf;
-    RooDataSet* _radLenData;
-    
     // variables for pdfs
     bool _useEnergyPdf   = false;
     bool _useMomentumPdf = false;
     bool _useMassPdf     = false;
-    bool _useRadLenPdf   = false;
     
     // external variables for likelihood
     double _extEnergy;
