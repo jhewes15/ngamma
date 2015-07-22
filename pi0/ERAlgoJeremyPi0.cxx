@@ -32,7 +32,7 @@ namespace ertool {
     // first case: training pdfs!
     if (_trainingMode)
     {
-      auto nodes = graph.GetParticleNodes(RecoType_t::kShower,0,22);
+      auto nodes = graph.GetParticleNodes(RecoType_t::kShower, 0, 22);
       if (nodes.size() == 2)
       {
         // get the two gamma shower particles
@@ -61,7 +61,7 @@ namespace ertool {
       CombinationScoreSet_t candidates = _nGamma->GammaComparison(graph, 2);
       
       // select the best candidates as pi0s
-      CombinationScoreSet_t event = _nGamma->EventSelection(candidates, 0.7);
+      CombinationScoreSet_t event = _nGamma->EventSelection(candidates, _cut);
       
       // add the pi0s to the particle graph, then check it worked properly
       AddPi0s(graph, event);
@@ -115,70 +115,6 @@ namespace ertool {
       parent->SetParticleInfo(pdg_pi0, ParticleMass(pdg_pi0), X, P, particle.second);
     }
   }
-
-  
-  // ******************************** //
-  // **** GAMMA SHOWER GENERATOR **** //
-  // ******************************** //
-  
-  Shower ERAlgoJeremyPi0::Generate()
-  {
-    // instantiate random number generator
-    TRandom3 rand;
-    
-    rand.SetSeed(0);
-    
-    // randomly generate position & momentum
-    double x = rand.Gaus(0,5);
-    double y = rand.Gaus(0,5);
-    double z = rand.Gaus(0,5);
-    
-    double px = rand.Gaus(0,5);
-    double py = rand.Gaus(0,5);
-    double pz = rand.Gaus(0,5);
-    
-    // if possible, get de/dx using empart params
-    
-    double dedx, energy;
-    
-    if (_empartMean1 == -1) dedx = 5;
-    else
-    {
-      if (rand.Integer(2) == 0)
-        dedx = rand.Gaus(_empartMean1,_empartSigma1);
-      else
-        dedx = rand.Gaus(_empartMean2,_empartSigma2);
-    }
-    
-    
-    // generate some energy yo
-    /*
-     if (_useEnergyPdf)
-     {
-     RooRealVar *meanVar, *sigmaVar;
-     meanVar  = (RooRealVar*)(_energyPdf->getVariables()->find("energyPdf_Gaus_mean"));
-     double mean  = meanVar->getVal();
-     sigmaVar = (RooRealVar*)(_energyPdf->getVariables()->find("energyPdf_Gaus_sigma"));
-     double sigma = sigmaVar->getVal();
-     energy = rand.Gaus(mean,sigma);
-     }
-     else
-     energy = 100;
-     */
-    
-    energy = rand.Uniform(0,1500);
-    
-    // instantiate the shower object
-    Shower s( geoalgo::Vector(x,y,z), geoalgo::Vector(px,py,pz), 30, 15);
-    s._energy = energy;
-    s._dedx = dedx;
-    
-    if (_verbose)
-      std::cout << "[" << __FUNCTION__ << "] Gamma generated with position (" << x << "," << y << "," << z << "), momentum (" << px << "," << py << "," << pz << "), dedx " << dedx << ", energy " << energy << std::endl;
-    
-    return s;
-  }
-  
 }
 
 #endif

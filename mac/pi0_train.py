@@ -30,7 +30,7 @@ ana_pi0 = ertool.ERAnaJeremyPi0()
 
 anaunit._mgr.AddAlgo(algo_empart)
 anaunit._mgr.AddAlgo(algo_pi0)
-anaunit._mgr.AddAna(ana_pi0)
+#anaunit._mgr.AddAna(ana_pi0)
 
 anaunit.SetShowerProducer(True,"mcreco")
 my_proc.enable_filter(True)

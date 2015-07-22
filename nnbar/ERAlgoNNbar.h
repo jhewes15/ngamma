@@ -1,19 +1,19 @@
 /**
- * \file ERAlgoJeremyPi0.h
+ * \file ERAlgoNNbar.h
  *
- * \ingroup Algo
+ * \ingroup nnbar
  * 
- * \brief Class def header for a class ERAlgoJeremyPi0
+ * \brief Class def header for a class ERAlgoNNbar
  *
- * @author jhewes15
+ * @author jeremy h
  */
 
-/** \addtogroup Algo
+/** \addtogroup nnbar
 
     @{*/
 
-#ifndef ERTOOL_ERALGOJEREMYPI0_H
-#define ERTOOL_ERALGOJEREMYPI0_H
+#ifndef ERTOOL_ERALGONNBAR_H
+#define ERTOOL_ERALGONNBAR_H
 
 #include "ERTool/Base/AlgoBase.h"
 #include "NGammaBase.h"
@@ -21,23 +21,23 @@
 namespace ertool {
 
   /**
-     \class ERAlgoJeremyPi0
+     \class ERAlgoNNbar
      User custom Algorithm class made by jeremy h
    */
-  class ERAlgoJeremyPi0 : public AlgoBase {
+  class ERAlgoNNbar : public AlgoBase {
   
   public:
 
     /// Default constructor
-    ERAlgoJeremyPi0(const std::string& name="Pi0");
+    ERAlgoNNbar(const std::string& name="NNbar");
 
     /// Default destructor
-    virtual ~ERAlgoJeremyPi0(){};
+    virtual ~ERAlgoNNbar(){};
     
     /// Set verbosity
     void SetVerbose(bool on){ _verbose = on; _nGamma->SetVerbose(on); };
     
-    /// Enable training mode
+    /// Set training mode (true = enabled)
     void TrainingMode(bool on){ _trainingMode = on; };
 
     /// Reset function
@@ -54,19 +54,14 @@ namespace ertool {
 
     /// Called after processing the last event sample
     void ProcessEnd(TFile* fout=nullptr);
-    
-    /// Take identified pi0s and add them to ParticleGraph
-    void AddPi0s(ParticleGraph& graph, CombinationScoreSet_t particles);
-    
-    void SetCut(int n){ _cut = (double)n / 10; };
-    
+
   protected:
     
     std::string _name;
-
+    
     bool _verbose      = false;
     bool _trainingMode = false;
-    
+
     double _cut = 0.7;
     
     NGammaBase *_nGamma;

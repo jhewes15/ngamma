@@ -15,8 +15,6 @@
 #define ERNGAMMABASE_H
 
 #include "ERTool/Algo/AlgoEMPart.h"
-#include <TRandom3.h>
-#include <RooDataHist.h>
 
 /**
    \class NGammaBase

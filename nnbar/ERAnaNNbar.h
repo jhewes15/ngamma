@@ -1,42 +1,37 @@
 /**
- * \file ERAnaJeremyPi0.h
+ * \file ERAnaNNbar.h
  *
- * \ingroup Selection
+ * \ingroup nnbar
  * 
- * \brief Class def header for a class ERAnaJeremyPi0
+ * \brief Class def header for a class ERAnaNNbar
  *
- * @author jhewes15
+ * @author jeremy h
  */
 
-/** \addtogroup Selection
+/** \addtogroup nnbar
 
     @{*/
 
-#ifndef ERTOOL_ERANAJEREMYPI0_H
-#define ERTOOL_ERANAJEREMYPI0_H
+#ifndef ERTOOL_ERANANNBAR_H
+#define ERTOOL_ERANANNBAR_H
 
 #include "ERTool/Base/AnaBase.h"
-#include "ERTool/Base/EventData.h"
-#include "ERTool/Base/ParticleGraph.h"
-#include <TH1.h>
-#include <TH2.h>
-#include <TCanvas.h>
 
 namespace ertool {
 
   /**
-     \class ERAnaJeremyPi0
+     \class ERAnaNNbar
      User custom Analysis class made by kazuhiro
    */
-  class ERAnaJeremyPi0 : public AnaBase {
+  class ERAnaNNbar : public AnaBase {
   
   public:
 
     /// Default constructor
-    ERAnaJeremyPi0(const std::string& name="ERAnaJeremyPi0");
+    ERAnaNNbar(const std::string& name="NNbar");
 
     /// Default destructor
-    virtual ~ERAnaJeremyPi0(){}
+    virtual ~ERAnaNNbar(){}
 
     /// Reset function
     virtual void Reset();
@@ -52,19 +47,7 @@ namespace ertool {
 
     /// Called after processing the last event sample
     void ProcessEnd(TFile* fout=nullptr);
-    
-    void SetBin(int bin) { _bin = bin; };
-    
-  protected:
-    int _bin = 0;
 
-    int _nTruePi0;
-    int _nRecoPi0;
-    
-    // histograms
-    TH1* _pi0True;
-    TH1* _pi0Reco;
-    TH1* _pi0EnergyEff;
   };
 }
 #endif

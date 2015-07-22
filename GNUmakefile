@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := base pi0 #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := base pi0 nnbar #ADD_NEW_SUBDIR ... do not remove this comment from this line
 
 #####################################################################################
 #

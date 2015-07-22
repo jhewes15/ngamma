@@ -19,15 +19,15 @@ namespace ertool {
     _extMomentum = new geoalgo::Vector(0.,0.,0.);
     
     // instantiate all the roofit vars, pdfs & datasets
-    _energyVar     = new RooRealVar("energyVar", "Energy [MeV] variable", 0.1, 10000.);
+    _energyVar     = new RooRealVar("energyVar", "Energy [MeV] variable", 0.1, 2000.);
     _energyPdf     = _factory.Gaus("energyPdf", *_energyVar);
     _energyData    = new RooDataSet("energyData", "NGamma energy data for PDF training",RooArgSet(*_energyVar));
     
-    _momentumVar   = new RooRealVar("momentumVar", "Momentum [MeV] variable", 0.1, 10000.);
+    _momentumVar   = new RooRealVar("momentumVar", "Momentum [MeV] variable", 0.1, 2000.);
     _momentumPdf   = _factory.Gaus("momentumPdf", *_momentumVar);
     _momentumData  = new RooDataSet("momentumData", "NGamma momentum data for PDF training", RooArgSet(*_momentumVar));
     
-    _massVar       = new RooRealVar("massVar", "Invariant mass [MeV] variable", 0.1, 10000.);
+    _massVar       = new RooRealVar("massVar", "Invariant mass [MeV] variable", 0.1, 2000.);
     _massPdf       = _factory.Gaus("massPdf", *_massVar);
     _massData      = new RooDataSet("massData", "NGamma invariant mass data for PDF training", RooArgSet(*_massVar));
   }
@@ -361,6 +361,9 @@ namespace ertool {
     if (!(_useEnergyPdf || _useMomentumPdf || _useMassPdf) && _verbose)
       std::cout << "[" << __FUNCTION__ << "] No PDFs were instantiated! Not saving output." << std::endl;
     
+    // pointers for mean & sigma variables
+    RooRealVar *meanVar, *sigmaVar;
+    
     // save energy params
     if (_useEnergyPdf)
     {
@@ -371,7 +374,6 @@ namespace ertool {
       }
       
       // get pointers to mean & sigma
-      RooRealVar *meanVar, *sigmaVar;
       meanVar = (RooRealVar*)(_energyPdf->getVariables()->find("energyPdf_Gaus_mean"));
       sigmaVar = (RooRealVar*)(_energyPdf->getVariables()->find("energyPdf_Gaus_sigma"));
       
@@ -381,24 +383,26 @@ namespace ertool {
       min *= 0.9;
       max *= 1.1;
       mean = _energyData->mean(*_energyVar);
-      meanVar->setRange(1, max);
-      sigmaVar->setRange(1, max);
+      meanVar->setRange(5, max);
+      sigmaVar->setRange(5, max);
       meanVar->setVal(mean);
       sigmaVar->setVal(mean);
       
       // fit pdf to data
       RooFitResult* energyResult = _energyPdf->fitTo(*_energyData, RooFit::Save(), RooFit::PrintLevel(-1));
-      energyResult->Print();
+      if (_verbose)
+        energyResult->Print();
       
       // plot pdf & data
       TCanvas *c = new TCanvas("c","",1000,500);
       RooPlot* frame = _energyVar->frame();
-      _energyData->plotOn(frame, RooFit::MarkerColor(kRed), RooFit::LineColor(kRed));
+      _energyData->plotOn(frame, RooFit::MarkerColor(kBlack), RooFit::LineColor(kBlack));
       _energyPdf->plotOn(frame, RooFit::LineColor(kRed));
       frame->Draw();
-      c->SaveAs("./energy_pdf.png");
+      c->SaveAs("./energyPdf.png");
+      delete c;
 
-      // save the parameter set to a config file (doesn't work right now)
+      // save the parameter set to a config file
       std::vector<double> darray;
       auto& params = OutputPSet();
       
@@ -406,6 +410,55 @@ namespace ertool {
       darray.push_back(sigmaVar->getVal());
       
       params.add_value("energy_params",::fcllite::VecToString(darray));
+    }
+    
+    // save momentum params
+    if (_useMomentumPdf)
+    {
+      if (_verbose)
+      {
+        std::cout << "[" << __FUNCTION__ << "] ";
+        _momentumData->Print();
+      }
+      
+      // get pointers to mean & sigma
+      meanVar = (RooRealVar*)(_momentumPdf->getVariables()->find("momentumPdf_Gaus_mean"));
+      sigmaVar = (RooRealVar*)(_momentumPdf->getVariables()->find("momentumPdf_Gaus_sigma"));
+      
+      // do, uh, something
+      double min, max, mean;
+      _momentumData->getRange(*_momentumVar, min, max);
+      std::cout << "Minimum is " << min << ", maximum is " << max;
+      min *= 0.9;
+      max *= 1.1;
+      mean = _momentumData->mean(*_momentumVar);
+      meanVar->setRange(5, max);
+      sigmaVar->setRange(5, max);
+      meanVar->setVal(mean);
+      sigmaVar->setVal(mean);
+      
+      // fit pdf to data
+      RooFitResult* momentumResult = _momentumPdf->fitTo(*_momentumData, RooFit::Save(), RooFit::PrintLevel(-1));
+      if (_verbose)
+        momentumResult->Print();
+      
+      // plot pdf & data
+      TCanvas *c = new TCanvas("c","",1000,500);
+      RooPlot* frame = _momentumVar->frame();
+      _momentumData->plotOn(frame, RooFit::MarkerColor(kBlack), RooFit::LineColor(kBlack));
+      _momentumPdf->plotOn(frame, RooFit::LineColor(kRed));
+      frame->Draw();
+      c->SaveAs("momentumPdf.png");
+      delete c;
+      
+      // save the parameter set to a config file
+      std::vector<double> darray;
+      auto& params = OutputPSet();
+      
+      darray.push_back(meanVar->getVal());
+      darray.push_back(sigmaVar->getVal());
+      
+      params.add_value("momentum_params",::fcllite::VecToString(darray));
     }
     
     // save mass params
@@ -418,7 +471,6 @@ namespace ertool {
       }
       
       // get pointers to mean & sigma
-      RooRealVar *meanVar, *sigmaVar;
       meanVar = (RooRealVar*)(_massPdf->getVariables()->find("massPdf_Gaus_mean"));
       sigmaVar = (RooRealVar*)(_massPdf->getVariables()->find("massPdf_Gaus_sigma"));
       
@@ -446,7 +498,7 @@ namespace ertool {
       _massPdf->plotOn(frame, RooFit::LineColor(kRed));
       frame->GetXaxis()->SetLimits(0,250);
       frame->Draw();
-      c->SaveAs("./mass_pdf.png");
+      c->SaveAs("./massPdf.png");
       delete c;
       
       // save the parameter set to a config file
